@@ -1,0 +1,155 @@
+---
+title: "R - HLS Bulk CMR Query"
+format: html
+editor: visual
+---
+
+# How to: HLS Bulk CMR-STAC Query in R
+
+## What is CMR-STAC?
+
+The **C**ommon **M**etadata **R**epository (**CMR**) is a metadata system that catalogs Earth science data and associated metadata records. **STAC** is short for **S**patio**T**emporal **A**sset **C**atalog (<http://stacspec.org/>), a series of specifications that provide a common language for interpreting geospatial information in order to standardize indexing and discovery of \`spatiotemporal assets\` (files containing information about the Earth across space and time).
+
+NASA's CMR-STAC **A**pplication **P**rogramming **I**nterface (**API**) is a translation API for STAC users who want to access and search through CMR's vast metadata holdings using STAC keywords. When querying NASA's CMR-STAC, there is a limit of 1 million granule results and 2000 granule results per page. Each granule will have a number of spatiotemporal assets or files associated with it depending on the instrument. This guide shows how to search the CMR-STAC, build a list of URLs for all assets associated with the matching granules for multiple pages of results, and leverage asynchronous or parallel requests to increase the speed of this process.
+
+## Objectives
+
+1.  Use R to query NASA's CMR-STAC to retrieve a quantity of more than 2000 granule result
+
+2.  Prepare a list of URLs to access or download assets associated with those granules.
+
+3.  Utilize asynchronous/parallel requests to increase speed of query and list construction.
+
+## Set up Working Environment
+
+Load required packages, define working directory, blah blah blah
+
+```{r}
+1 + 1
+```
+
+## Search CMR-STAC
+
+Set the CMR-STAC API Endpoint and choose a STAC catalog. There are several catalogs, but for the HLS Landsat-8 and Sentinel-2 collections we want to use `LP CLOUD`.
+
+```{r}
+CMR_end <-  'https://cmr.earthdata.nasa.gov/search' # CMR-STAC API Endpoint
+
+# To show all potential catalogs
+provider <-'LPCLOUD'                      # define STAC catalog of interest
+url <-  f'{CMR_edn}/{"granules"}'           # define url of granule assets    
+```
+
+To search the CMR-STAC we need to set our parameters. In this example we'll narrow our search using Collection IDs, a range of dates and times, and the number of results we want to show per page. Spatial areas can also be used to narrow searches.
+
+Here, we are interested in both HLS Landsat-8 and Sentinel-2 collections collected from October 17-19, 2021. Specify the `collections` to search, set a `datetime_range` and set the quantity of results to return per page using the `page_size` parameter like below. A CMR search can find up to 1 million STAC items or granules, but the number returned per page is limited to 2000, meaning large searches may have several pages of results. By default, `page_size` is set to 10.
+
+```{r}
+collections <- c('C2021957657-LPCLOUD', 'C2021957295-LPCLOUD') # Collection or concept_id specific to LPDAAC Products (HLS Landsat OLI and HLS Sentinel-2 respectively) 
+datetime_range <- '2021-10-17T00:00:00Z,2021-10-19T23:59:59Z'
+page_size <- 2000
+```
+
+## Submit a request
+
+Using the above search criteria we can make a request using the `requests.get()` function. Submit a request and print the `response.status_code`.
+
+```{r}
+response = requests.get(url, 
+                        params={
+                            'concept_id': collections,
+                            'temporal': datetime_range,
+                            'page_size': page_size,
+                            },
+                        headers={
+                            'Accept': 'application/json'
+                            }
+                       )
+print(response.status_code)
+```
+
+A status code of 200 indicates the request has succeeded.
+
+To see the quantity of results, print the `CMR-Hits`.
+
+```{r}
+print(response.headers['CMR-Hits']) # Resulting quantity of granules/items.
+```
+
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+## CMR-STAC Search
+
+Here we use CMR-STAC Search endpoint to query items and associated assets more precisely and faster. With the CMR-STAC Search endpoint, we can specify the collection(s), area, and time period of interest, as well as other parameters to identify the data that meet our criteria. Visit [here](https://github.com/radiantearth/stac-api-spec/tree/master/item-search#query-parameters-and-fields) for more information on search query parameters. We are specifically interested to The [**H**armonized **L**andsat **S**entinel](https://lpdaac.usgs.gov/data/get-started-data/collection-overview/missions/harmonized-landsat-sentinel-2-hls-overview/) product (**HLS**), so we tailor our search parameters to that data set.
+
+### Part 1: Define Search Parameters
+
+First, define the url for the LPCLOUD catalog.
+
+```{r}
+lpcloud_URL <- "https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search"
+```
+
+Next, define the search parameters including the:
+
+1.  **Collection ID** - should be defined as a list
+
+    ```{r}
+    c <- list("HLSS30.v2.0", "HLSL30.v2.0")
+    ```
+
+2.  **Date-Time** - the time period of interest should be specified as `YYYY-MM-DDTHH:MM:SSZ/YYYY-MM-DDTHH:MM:SSZ` where YYYY equals year, MM equals month, DD equals day, HH equal hour, MM(second appearance in string) equals minute, SS equals seconds, and Z is part of the temporal query definition and stands for Zero Offset Hour. "/" separated the beginning and end of the time of interest.
+
+    ```{r}
+    d <- '2000-01-01T00:00:00Z/2001-01-31T23:59:59Z'
+    ```
+
+3.  **Spatial Bounding Box** - includes the coordinates of LL (lower left) and UR (upper right) respectively
+
+    ```{r}
+    b <- '-122.0622682571411,39.897234301806,-122.04918980598451,39.91309383703065'
+    ```
+
+Now, combine these parameters into a list called 'body' that can be submitted to CMR-STAC Search
+
+```{r}
+# place in a list 
+body <- list(limit=100,
+             datetime=d,
+             bbox= b,
+             collections= c)
+
+```
+
+### Part 2: Search for Items
+
+Next, submit a query to the search endpoint using a POST request.
+
+```{r}
+search_req <- httr::POST(lpcloud_search_URL[1], body = body, encode = "json") %>% 
+  httr::content(as = "text") %>%  
+  jsonlite::fromJSON()
+
+names(search_req)
+
+cat("The number of STAC Items matched your query is ", search_req$numberMatched, 'and ',  search_req$numberReturned, 'Items are returned.')
+
+
+granule_list <- list()
+
+n <- 1
+for(row in row.names(search_req$features)){
+  f <- search_req$features[row,]
+  for (b in f$assets){
+    df <- data.frame(Collection = f$collection,
+                     Granule_ID = f$id,
+                     Datetime = f$properties$datetime,
+                     Asset_Link = b$href, stringsAsFactors=FALSE)
+    granule_list[[n]] <- df
+    n <- n + 1
+  }
+}
+
+search_df <- do.call(rbind, granule_list)
+DT::datatable(search_df)
+```

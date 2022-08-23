@@ -1,0 +1,89 @@
+---
+title: "MCD12_difftesting"
+format: html
+editor: visual
+---
+
+# MCD12s v 6.1 Difference Testing
+
+Retrieve MCD12 Q1 and Q2 v.6.1 from both [opendap](https://opendap.cr.usgs.gov/opendap/hyrax/MCD12Q2.061/h16v07.ncml.html) and [data pool](https://e4ftl01.cr.usgs.gov/). Then compare values between files to make sure the ones coming out of data pool are the same as the ones on opendap.
+
+## OPeNDAP NetCDF
+
+Using data from Senegal (h16v07) in year 2015 (opendap time request 14:1:14, because start at zero instead of 1). Open and retrieve Land Cover Type1 and QA data from netCDF
+
+```{r}
+# Load required libraries
+  library(raster) 
+  library(ncdf4)
+
+# Open netcdf file using ncdf4 package 
+  nc <- ncdf4::nc_open('C:/Users/blind/TEMP_workspace/testing/opendap_MCD12/h16v07_Q1go.ncml.nc4')
+  
+# Describe contents of nc file
+  attributes(nc$var)$names
+        print(paste("The file has",nc$nvar, "variables"))
+        print(paste("The file has",nc$ndims, "dimensions"))
+        print(paste("The file has",nc$natts, "NetCDF attributes"))
+
+# Retrieve data array from file
+  LCType1 <- ncvar_get(nc, attributes(nc$var)$names[2])
+  QC1 <- ncvar_get(nc, attributes(nc$var)$names[1])
+```
+
+Also retrieve data from MCD12Q2
+
+```{r}
+# Open netcdf file using ncdf4 package 
+  nc2 <- ncdf4::nc_open('C:/Users/blind/TEMP_workspace/testing/opendap_MCD12/h16v07_Q2go.ncml.nc4')
+  
+# Describe contents of nc file
+  attributes(nc2$var)$names
+        print(paste("The file has",nc2$nvar, "variables"))
+        print(paste("The file has",nc2$ndims, "dimensions"))
+        print(paste("The file has",nc2$natts, "NetCDF attributes"))
+
+# Retrieve data array from file
+  Sen <- ncvar_get(nc2, attributes(nc2$var)$names[2])
+  QC <- ncvar_get(nc2, attributes(nc2$var)$names[1])
+```
+
+## Data Pool
+
+```{r}
+# Can also use neytCDF package for hdf files 
+  hd <- ncdf4::nc_open('C:/Users/blind/TEMP_workspace/testing/opendap_MCD12/MCD12Q1.A2015001.h16v07.061.2022166014721.hdf')
+  
+   attributes(hd$var)$names
+   LCType1_hd <- ncvar_get(hd, attributes(hd$var)$names[1])
+   QC1_hd <- ncvar_get(hd, attributes(hd$var)$names[12])
+```
+
+Also retrieve data from MCD12Q2
+
+```{r}
+# Can also use neytCDF package for hdf files 
+  hd2 <- ncdf4::nc_open('C:/Users/blind/TEMP_workspace/testing/opendap_MCD12/MCD12Q2.A2015001.h16v07.061.2022111215125.hdf')
+  
+   attributes(hd2$var)$names
+   Sen_hd <- ncvar_get(hd2, attributes(hd2$var)$names[6])
+   QC_hd <- ncvar_get(hd2, attributes(hd2$var)$names[12])
+```
+
+## Compare values in the two Arrays
+
+Can check if arrays are the same in two ways: 1) identical and 2) ==
+
+```{r}
+# using identical in base R
+identical(LCType1, LCType1_hd)
+identical(QC1, QC1_hd)
+
+identical(Sen, Sen_hd)
+identical(QC, QC_hd)
+
+# using "==" in base R. If LC_Type1 equals LC_Type1_hd, put 0, else put 1.  If there are no differences between the arrays, the sum of should be 0; if the sum is greater than 0, there are some differences.
+diffs <- ifelse(LCType1==LCType1_hd, 0, 1)
+sum   <- sum(diffs) 
+sum
+```
