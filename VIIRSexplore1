@@ -1,0 +1,217 @@
+---
+title: "VIIRS Explorer"
+format: html
+editor: visual
+---
+
+# TASK:
+
+Use a cloud native workflow to retrieve and compare [VIIRS](https://lpdaac.usgs.gov/data/get-started-data/collection-overview/missions/s-npp-nasa-viirs-overview/) v2 surface reflectance data pairs files from both [opendap](https://opendap.cr.usgs.gov/opendap/hyrax/MCD12Q2.061/h16v07.ncml.html) (test data, netCDF, .nc4) and [EarthDataSearch](https://search.earthdata.nasa.gov/search) (reference data, hdf5, .h5). Compare numerical data values *and* the metadata between files to make sure they are functionally equivalent.
+
+**Approach:**
+
+-   Part 1: Comparing Metadata
+
+-   Part 2: Comparing Data Values
+
+In all cases use **tile list** from each quadrant of Earth; can see tiles [here](https://modis-land.gsfc.nasa.gov/MODLAND_grid.html). These specific tiles have been selected to capture variation in land and water coverage.
+
++-------------+-----------+-----------+
+|             | Northern  | Southern  |
++=============+===========+===========+
+| **Eastern** | h10v03    | h10v09    |
+|             |           |           |
+|             | h11v05    | h13v12    |
++-------------+-----------+-----------+
+| **Western** | h18v03    | h21v09    |
+|             |           |           |
+|             | h24v06    | h30v10    |
++-------------+-----------+-----------+
+
+## Part 1: Metadata
+
+Use the list below (n=10) and **consider** Attributes ( offset, scale factor, units, valid range) and types (signed/unsigned integer) associated with the data
+
+<div>
+
++--------------+--------------+----------------------------+---------------------+
+| Data         | Collection   | Spatial Resolution **(m)** | Temporal Resolution |
++==============+==============+============================+=====================+
+| VNP09A1      | S.N.VIIRS    | 1000                       | 8-day               |
++--------------+--------------+----------------------------+---------------------+
+| VNP09CMG     | S.N.VIIRS    | 5600                       | daily               |
++--------------+--------------+----------------------------+---------------------+
+| VNP09GA      | S.N.VIIRS    | 1000                       | daily               |
++--------------+--------------+----------------------------+---------------------+
+| VNP09GA      | S.N.VIIRS    | 500                        | daily               |
++--------------+--------------+----------------------------+---------------------+
+| VNP09H1      | S.N.VIIRS    | 500                        | 8-day               |
++--------------+--------------+----------------------------+---------------------+
+| VJ09A1       | NOAA-20      | 1000                       | 8-day               |
++--------------+--------------+----------------------------+---------------------+
+| VJ09CMG      | NOAA-20      | 5600                       | daily               |
++--------------+--------------+----------------------------+---------------------+
+| VJ109GA      | NOAA-20      | 1000                       | daily               |
++--------------+--------------+----------------------------+---------------------+
+| VJ109GA      | NOAA-20      | 500                        | daily               |
++--------------+--------------+----------------------------+---------------------+
+| VJ109H1      | NOAA-20      | 500                        | daily               |
++--------------+--------------+----------------------------+---------------------+
+
+</div>
+
+## Part 2: Data Values
+
+Use the list below (n=34) and **consider** Data numerical values; use difference test.
+
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+| Data                                                       | Spatial Resolution **(m)** | Temporal Resolution | Data Type       | Layer Name              |
++============================================================+============================+=====================+=================+=========================+
+| [VNP09A1](https://lpdaac.usgs.gov/products/vnp09a1v002/)   | 1000                       | 8-day               | 16-bit unsigned | SurfReflect_Day_Of_Year |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 16-bit signed   | SurfReflect_M1_1        |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 32-bit unsigned | SurfReflect_QC          |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+| [VNP09CMG](https://lpdaac.usgs.gov/products/vnp09cmgv002/) | 5600                       | daily               | 8-bit unsigned  | SurfReflect_QF1         |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 16-bit unsigned | SurfReflect_M8_1        |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 16-bit signed   | SurfReflect_M5_1        |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 32-bit unsigned | Number_Mapping_2        |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+| [VNP09GA](https://lpdaac.usgs.gov/products/vnp09gav002/)   | 1000                       | daily               | 8-bit unsigned  | land_water_mask_c       |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 8-bit signed    | obscov_1km_c            |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 16-bit signed   | SolarZenith_c           |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 32-bit signed   | nadd_obs_row_1km        |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+| [VNP09GA](https://lpdaac.usgs.gov/products/vnp09gav002/)   | 500                        | daily               | 8-bit unsigned  | land_water_mask_c       |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 8-bit signed    | obscov_500m_c           |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 16-bit signed   | SolarZenith_c           |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 32-bit signed   | nadd_obs_row_500m       |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+| [VNP09H1](https://lpdaac.usgs.gov/products/vnp09h1v002/)   | 500                        | 8-day               | 16-bit unsigned | SurfReflect_I3          |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 16-bit signed   | SurfReflect_QC_500m     |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+| [VJ09A1](https://lpdaac.usgs.gov/products/vj109a1v002/)    | 1000                       | 8-day               | 16-bit unsigned | SurfReflect_Day_Of_Year |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 16-bit signed   | SurfReflect_M1_1        |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 32-bit unsigned | SurfReflect_QC          |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+| [VJ09CMG](https://lpdaac.usgs.gov/products/vj109a1v002/)   | 5600                       | daily               | 8-bit unsigned  | SurfReflect_QF1         |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 16-bit unsigned | NPix_375_Averaged       |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 16-bit signed   | SurfReflect_M11         |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 32-bit unsigned | Number_Mapping_2        |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+| [VJ109GA](https://lpdaac.usgs.gov/products/vj109gav002/)   | 1000                       | daily               | 8-bit unsigned  | land_water_maks_c       |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 8-bit signed    | obscov_1km_c            |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 16-bit signed   | SolarZenith_c           |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 32-bit signed   | nadd_obs_row_1km        |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+| [VJ109GA](https://lpdaac.usgs.gov/products/vj109gav002/)   | 500                        | daily               | 8-bit unsigned  | land_water_maks_c       |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 8-bit signed    | obscov_500m_c           |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 16-bit signed   | SolarZenith_c           |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 32-bit signed   | nadd_obs_row_500m       |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+| [VJ109H1](https://lpdaac.usgs.gov/products/vj109h1v002/)   | 500                        | daily               | 16-bit unsigned | SurfReflect_I3          |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+|                                                            |                            |                     | 16-bit signed   | SurfReflect_QC_500m     |
++------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
+
+## OPeNDAP NetCDF
+
+Using data from Senegal (h16v07) in year 2015 (opendap time request 14:1:14, because start at zero instead of 1). Open and retrieve Land Cover Type1 and QA data from netCDF
+
+```{r}
+# Load required libraries
+  library(raster) 
+  library(ncdf4)
+
+# Open netcdf file using ncdf4 package 
+  nc <- ncdf4::nc_open('C:/Users/blind/TEMP_workspace/testing/opendap_MCD12/h16v07_Q1go.ncml.nc4')
+  
+# Describe contents of nc file
+  attributes(nc$var)$names
+        print(paste("The file has",nc$nvar, "variables"))
+        print(paste("The file has",nc$ndims, "dimensions"))
+        print(paste("The file has",nc$natts, "NetCDF attributes"))
+
+# Retrieve data array from file
+  LCType1 <- ncvar_get(nc, attributes(nc$var)$names[2])
+  QC1 <- ncvar_get(nc, attributes(nc$var)$names[1])
+```
+
+Also retrieve data from MCD12Q2
+
+```{r}
+# Open netcdf file using ncdf4 package 
+  nc2 <- ncdf4::nc_open('C:/Users/blind/TEMP_workspace/testing/opendap_MCD12/h16v07_Q2go.ncml.nc4')
+  
+# Describe contents of nc file
+  attributes(nc2$var)$names
+        print(paste("The file has",nc2$nvar, "variables"))
+        print(paste("The file has",nc2$ndims, "dimensions"))
+        print(paste("The file has",nc2$natts, "NetCDF attributes"))
+
+# Retrieve data array from file
+  Sen <- ncvar_get(nc2, attributes(nc2$var)$names[2])
+  QC <- ncvar_get(nc2, attributes(nc2$var)$names[1])
+```
+
+## Data Pool
+
+```{r}
+# Can also use neytCDF package for hdf files 
+  hd <- ncdf4::nc_open('C:/Users/blind/TEMP_workspace/testing/opendap_MCD12/MCD12Q1.A2015001.h16v07.061.2022166014721.hdf')
+  
+   attributes(hd$var)$names
+   LCType1_hd <- ncvar_get(hd, attributes(hd$var)$names[1])
+   QC1_hd <- ncvar_get(hd, attributes(hd$var)$names[12])
+```
+
+Also retrieve data from MCD12Q2
+
+```{r}
+# Can also use neytCDF package for hdf files 
+  hd2 <- ncdf4::nc_open('C:/Users/blind/TEMP_workspace/testing/opendap_MCD12/MCD12Q2.A2015001.h16v07.061.2022111215125.hdf')
+  
+   attributes(hd2$var)$names
+   Sen_hd <- ncvar_get(hd2, attributes(hd2$var)$names[6])
+   QC_hd <- ncvar_get(hd2, attributes(hd2$var)$names[12])
+```
+
+## Compare values in the two Arrays
+
+Can check if arrays are the same in two ways: 1) identical and 2) ==
+
+```{r}
+# using identical in base R
+identical(LCType1, LCType1_hd)
+identical(QC1, QC1_hd)
+
+identical(Sen, Sen_hd)
+identical(QC, QC_hd)
+
+# using "==" in base R. If LC_Type1 equals LC_Type1_hd, put 0, else put 1.  If there are no differences between the arrays, the sum of should be 0; if the sum is greater than 0, there are some differences.
+diffs <- ifelse(LCType1==LCType1_hd, 0, 1)
+sum   <- sum(diffs) 
+sum
+```
