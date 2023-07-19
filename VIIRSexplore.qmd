@@ -16,17 +16,17 @@ Use a cloud native workflow to retrieve and compare [VIIRS](https://lpdaac.usgs.
 
 In all cases use **tile list** from each quadrant of Earth; can see tiles [here](https://modis-land.gsfc.nasa.gov/MODLAND_grid.html). These specific tiles have been selected to capture variation in land and water coverage.
 
-+-------------+-----------+-----------+
-|             | Northern  | Southern  |
-+=============+===========+===========+
-| **Eastern** | h10v03    | h10v09    |
-|             |           |           |
-|             | h11v05    | h13v12    |
-+-------------+-----------+-----------+
-| **Western** | h18v03    | h21v09    |
-|             |           |           |
-|             | h24v06    | h30v10    |
-+-------------+-----------+-----------+
++-------------+----------+----------+
+|             | Northern | Southern |
++=============+==========+==========+
+| **Eastern** | h10v03   | h10v09   |
+|             |          |          |
+|             | h11v05   | h13v12   |
++-------------+----------+----------+
+| **Western** | h18v03   | h21v09   |
+|             |          |          |
+|             | h24v06   | h30v10   |
++-------------+----------+----------+
 
 ## Part 1: Metadata
 
@@ -34,29 +34,18 @@ Use the list below (n=10) and **consider** Attributes ( offset, scale factor, un
 
 <div>
 
-+--------------+--------------+----------------------------+---------------------+
-| Data         | Collection   | Spatial Resolution **(m)** | Temporal Resolution |
-+==============+==============+============================+=====================+
-| VNP09A1      | S.N.VIIRS    | 1000                       | 8-day               |
-+--------------+--------------+----------------------------+---------------------+
-| VNP09CMG     | S.N.VIIRS    | 5600                       | daily               |
-+--------------+--------------+----------------------------+---------------------+
-| VNP09GA      | S.N.VIIRS    | 1000                       | daily               |
-+--------------+--------------+----------------------------+---------------------+
-| VNP09GA      | S.N.VIIRS    | 500                        | daily               |
-+--------------+--------------+----------------------------+---------------------+
-| VNP09H1      | S.N.VIIRS    | 500                        | 8-day               |
-+--------------+--------------+----------------------------+---------------------+
-| VJ09A1       | NOAA-20      | 1000                       | 8-day               |
-+--------------+--------------+----------------------------+---------------------+
-| VJ09CMG      | NOAA-20      | 5600                       | daily               |
-+--------------+--------------+----------------------------+---------------------+
-| VJ109GA      | NOAA-20      | 1000                       | daily               |
-+--------------+--------------+----------------------------+---------------------+
-| VJ109GA      | NOAA-20      | 500                        | daily               |
-+--------------+--------------+----------------------------+---------------------+
-| VJ109H1      | NOAA-20      | 500                        | daily               |
-+--------------+--------------+----------------------------+---------------------+
+| Data     | Collection | Spatial Resolution **(m)** | Temporal Resolution |
+|----------|------------|----------------------------|---------------------|
+| VNP09A1  | S.N.VIIRS  | 1000                       | 8-day               |
+| VNP09CMG | S.N.VIIRS  | 5600                       | daily               |
+| VNP09GA  | S.N.VIIRS  | 1000                       | daily               |
+| VNP09GA  | S.N.VIIRS  | 500                        | daily               |
+| VNP09H1  | S.N.VIIRS  | 500                        | 8-day               |
+| VJ09A1   | NOAA-20    | 1000                       | 8-day               |
+| VJ09CMG  | NOAA-20    | 5600                       | daily               |
+| VJ109GA  | NOAA-20    | 1000                       | daily               |
+| VJ109GA  | NOAA-20    | 500                        | daily               |
+| VJ109H1  | NOAA-20    | 500                        | daily               |
 
 </div>
 
@@ -68,6 +57,10 @@ Use the list below (n=34) and **consider** Data numerical values; use difference
 | Data                                                       | Spatial Resolution **(m)** | Temporal Resolution | Data Type       | Layer Name              |
 +============================================================+============================+=====================+=================+=========================+
 | [VNP09A1](https://lpdaac.usgs.gov/products/vnp09a1v002/)   | 1000                       | 8-day               | 16-bit unsigned | SurfReflect_Day_Of_Year |
+|                                                            |                            |                     |                 |                         |
+| **s3://lp-prod-public/VNP09A1.002**                        |                            |                     |                 |                         |
+|                                                            |                            |                     |                 |                         |
+|     "collection_concept_id":"C2519124793-LPCLOUD"          |                            |                     |                 |                         |
 +------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
 |                                                            |                            |                     | 16-bit signed   | SurfReflect_M1_1        |
 +------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
@@ -136,9 +129,50 @@ Use the list below (n=34) and **consider** Data numerical values; use difference
 |                                                            |                            |                     | 16-bit signed   | SurfReflect_QC_500m     |
 +------------------------------------------------------------+----------------------------+---------------------+-----------------+-------------------------+
 
+## Develop work flow with single hdf5 file:
+
+For VNP09A1at tile h10v03 s3_meta provides 'direct access to EXTENDED METADATA' and s3_gran provides 'direct download access via s3 to the granule"
+
+```{r}
+s3_meta <- 's3://lp-prod-protected/VNP09A1.002/VNP09A1.A2012025.h10v03.002.2023129085952/VNP09A1.A2012025.h10v03.002.2023129085952.cmr.xml'
+
+s3_gran <- 's3://lp-prod-protected/VNP09A1.002/VNP09A1.A2012025.h10v03.002.2023129085952/VNP09A1.A2012025.h10v03.002.2023129085952.h5'
+```
+
+```{r}
+#Modules needed for accesing S3 data in the cloud
+library("aws.s3")
+library("ncdf4")
+library("raster")
+#Setting Environment variables with AWS access keys  - See links below
+#https://archive.podaac.earthdata.nasa.gov/s3credentials 
+#https://archive.podaac.earthdata.nasa.gov/s3credentialsREADME 
+Sys.setenv(AWS_ACCESS_KEY_ID="ASIAZLX6ZES4ZDUYU6FA",AWS_SECRET_ACCESS_KEY="9z90SGRv23YRGv3WyYPDsgWF5PDCemDrAGSBYWTA",AWS_DEFAULT_REGION="us-west-2",AWS_REGION="us-west-2",AWS_SESSION_TOKEN="token")
+
+
+#Opening a specific file
+nc_data <- s3read_using(FUN = nc_open, object = "20040111090000-JPL-L4_GHRSST-SSTfnd-MUR25-GLOB-v02.0-fv04.2.nc", bucket="podaac-ops-cumulus-protected/MUR25-JPL-L4-GLOB-v04.2" )
+lat <- ncvar_get(nc_data, "lat")
+lon <- ncvar_get(nc_data, "lon")
+analysed_sst <- ncvar_get(nc_data, "analysed_sst")
+
+#Obtaining Fill value from attributes
+
+fillvalue <- ncatt_get(nc_data, "analysed_sst", "_FillValue")
+analysed_sst[analysed_sst == fillvalue$value] <- NA
+nc_close(nc_data)
+
+#Saving plot to jpeg
+r <- raster(t(analysed_sst), xmn=min(lon), xmx=max(lon), ymn=min(lat), ymx=max(lat), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r <- flip(r, direction='y')
+jpeg('20040111090000-JPL-L4_GHRSST-SSTfnd-MUR25-GLOB-v02.0-fv04.2.jpg')
+plot(r)
+dev.off()
+```
+
 ## OPeNDAP NetCDF
 
-Using data from Senegal (h16v07) in year 2015 (opendap time request 14:1:14, because start at zero instead of 1). Open and retrieve Land Cover Type1 and QA data from netCDF
+Open and retrieve Land Cover Type1 and QA data from netCDF
 
 ```{r}
 # Load required libraries
