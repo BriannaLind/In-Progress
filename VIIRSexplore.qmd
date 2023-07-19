@@ -4,7 +4,7 @@ format: html
 editor: visual
 ---
 
-# TASK:
+# CRAZY TASK:
 
 Use a cloud native workflow to retrieve and compare [VIIRS](https://lpdaac.usgs.gov/data/get-started-data/collection-overview/missions/s-npp-nasa-viirs-overview/) v2 surface reflectance data pairs files from both [opendap](https://opendap.cr.usgs.gov/opendap/hyrax/MCD12Q2.061/h16v07.ncml.html) (test data, netCDF, .nc4) and [EarthDataSearch](https://search.earthdata.nasa.gov/search) (reference data, hdf5, .h5). Compare numerical data values *and* the metadata between files to make sure they are functionally equivalent.
 
@@ -34,18 +34,29 @@ Use the list below (n=10) and **consider** Attributes ( offset, scale factor, un
 
 <div>
 
-| Data     | Collection | Spatial Resolution **(m)** | Temporal Resolution |
-|----------|------------|----------------------------|---------------------|
-| VNP09A1  | S.N.VIIRS  | 1000                       | 8-day               |
-| VNP09CMG | S.N.VIIRS  | 5600                       | daily               |
-| VNP09GA  | S.N.VIIRS  | 1000                       | daily               |
-| VNP09GA  | S.N.VIIRS  | 500                        | daily               |
-| VNP09H1  | S.N.VIIRS  | 500                        | 8-day               |
-| VJ09A1   | NOAA-20    | 1000                       | 8-day               |
-| VJ09CMG  | NOAA-20    | 5600                       | daily               |
-| VJ109GA  | NOAA-20    | 1000                       | daily               |
-| VJ109GA  | NOAA-20    | 500                        | daily               |
-| VJ109H1  | NOAA-20    | 500                        | daily               |
++-------------+-------------+----------------------------+---------------------+
+| Data        | Collection  | Spatial Resolution **(m)** | Temporal Resolution |
++=============+=============+============================+=====================+
+| VNP09A1     | S.N.VIIRS   | 1000                       | 8-day               |
++-------------+-------------+----------------------------+---------------------+
+| VNP09CMG    | S.N.VIIRS   | 5600                       | daily               |
++-------------+-------------+----------------------------+---------------------+
+| VNP09GA     | S.N.VIIRS   | 1000                       | daily               |
++-------------+-------------+----------------------------+---------------------+
+| VNP09GA     | S.N.VIIRS   | 500                        | daily               |
++-------------+-------------+----------------------------+---------------------+
+| VNP09H1     | S.N.VIIRS   | 500                        | 8-day               |
++-------------+-------------+----------------------------+---------------------+
+| VJ09A1      | NOAA-20     | 1000                       | 8-day               |
++-------------+-------------+----------------------------+---------------------+
+| VJ09CMG     | NOAA-20     | 5600                       | daily               |
++-------------+-------------+----------------------------+---------------------+
+| VJ109GA     | NOAA-20     | 1000                       | daily               |
++-------------+-------------+----------------------------+---------------------+
+| VJ109GA     | NOAA-20     | 500                        | daily               |
++-------------+-------------+----------------------------+---------------------+
+| VJ109H1     | NOAA-20     | 500                        | daily               |
++-------------+-------------+----------------------------+---------------------+
 
 </div>
 
